@@ -2,7 +2,6 @@
 
 <div align="center">
 
-![Logo](.github/logo.png) [![GitHub stars](https://img.shields.io/github/stars/yepemar99/app-prod-tubos?style=for-the-badge)](https://github.com/yepemar99/app-prod-tubos/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/yepemar99/app-prod-tubos?style=for-the-badge)](https://github.com/yepemar99/app-prod-tubos/network)
 [![GitHub issues](https://img.shields.io/github/issues/yepemar99/app-prod-tubos?style=for-the-badge)](https://github.com/yepemar99/app-prod-tubos/issues)
 [![GitHub license](https://img.shields.io/github/license/yepemar99/app-prod-tubos?style=for-the-badge)](LICENSE) **Una aplicación de escritorio multiplataforma para la gestión y visualización de datos de producción relacionados con tubos o tuberías.**
