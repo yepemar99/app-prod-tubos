@@ -268,14 +268,6 @@ CREATE TABLE dbo.Maquinas (
 );
 GO
 
-Aquí tienes el código para crear la tabla dbo.Control_Dimensional basándonos exactamente en la estructura de tu última imagen.
-
-Para esta tabla, regresamos al uso de identificadores tipo INT estándar. Prácticamente todas las columnas permiten valores nulos (NULL), a excepción de la llave primaria. Manteniendo las condiciones (id autoincremental y creado con la fecha y hora por defecto), el script queda así:
-
-SQL
-USE [prod_tubos];
-GO
-
 CREATE TABLE dbo.Control_Dimensional (
     id INT IDENTITY(1,1) NOT NULL,
     creado DATETIME2(7) NULL CONSTRAINT DF_Control_Dimensional_creado DEFAULT SYSDATETIME(),
