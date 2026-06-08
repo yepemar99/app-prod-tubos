@@ -203,6 +203,7 @@ const ProduccionTuboForm = ({
       const payload = {
         control_dimensional_id: Number(contolDID),
         operario_id: Number(data.operario_id),
+        paquetes: Number(paquetesRealizados),
         turno_id: Number(data.turno_id),
         maquina_id: Number(data.maquina_id),
         tubo_id: Number(data.tubo_id),
@@ -210,7 +211,6 @@ const ProduccionTuboForm = ({
         cant_tubos_malos: Number(data.tubos_rechazo),
         concentracion_taladrina: Number(data.concentracion),
         observacion: data.observaciones || '',
-        lote: `L${maquina?.maquina}${fechaLote}${turno?.prefijo}`,
         creado: data.fecha,
       };
 

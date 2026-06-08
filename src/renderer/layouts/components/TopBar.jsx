@@ -11,7 +11,7 @@ import paths from '../../routes/paths';
 import Image from '../../components/base/Image';
 import LogoImg from '../../../assets/logos/logo.jpg';
 
-export default function TopBar() {
+export default function TopBar({ title = '' }) {
   return (
     <Stack
       sx={{
@@ -31,6 +31,7 @@ export default function TopBar() {
           }}
         />
       </ButtonBase>
+      {title && <Typography>{title}</Typography>}
     </Stack>
   );
 }

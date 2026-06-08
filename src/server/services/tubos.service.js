@@ -210,7 +210,7 @@ export async function guardarProduccionTuboService(payload = {}) {
     const cant_tubos_malos = Number(payload.cant_tubos_malos);
     const concentracion_taladrina = Number(payload.concentracion_taladrina);
     const observacion = escapeSqlString(payload.observacion || '');
-    const lote = payload.lote ? escapeSqlString(payload.lote) : null;
+    const paquetes = Number(payload.paquetes) || 0;
     const creado = payload.creado;
 
     if (!Number.isInteger(operario_id) || operario_id <= 0) {
@@ -230,10 +230,6 @@ export async function guardarProduccionTuboService(payload = {}) {
 
     if (!Number.isInteger(maquina_id) || maquina_id <= 0) {
       throw new Error('maquina_id invalido');
-    }
-
-    if (!lote || (lote && lote.length > 50)) {
-      throw new Error('lote demasiado largo (max 50 caracteres)');
     }
 
     if (!Number.isInteger(tubo_id) || tubo_id <= 0) {
@@ -257,8 +253,39 @@ export async function guardarProduccionTuboService(payload = {}) {
     }
 
     const conn = database.getConnection();
+
+    // Buscar lote y actualizar cantidad final
+    const loteQuery = `
+      SELECT TOP 1 * FROM Lotes_Tubos 
+      WHERE tubo_id = ${tubo_id} 
+      AND CAST(creado AS DATE) = '${creado}'
+      ORDER BY id DESC
+    `;
+
+    const loteResult = await database.getConnection().query(loteQuery);
+    const ultimoLote = loteResult?.[0] || '';
+
+    if (!ultimoLote) {
+      throw new Error(
+        'No se encontro lote para la produccion el tubo y fecha indicados',
+      );
+    }
+
+    if (ultimoLote?.num_paq_final == 0) {
+      const updateLoteQuery = `
+        UPDATE Lotes_Tubos
+        SET num_paq_final = ${Math.trunc(paquetes)}
+        WHERE id = ${ultimoLote.id}
+      `;
+      console.log('Ejecutando updateLoteQuery:', updateLoteQuery);
+      await conn.query(updateLoteQuery);
+    }
+
+    const nuevoLote = ultimoLote?.id ? Number(ultimoLote.id) : null;
+
     const query = `
       INSERT INTO Prod_Tubos (
+        lote_tubo_id,
         operario_id,
         control_dimensional_id,
         turno_id,
@@ -267,11 +294,12 @@ export async function guardarProduccionTuboService(payload = {}) {
         cant_tubos_buenos,
         cant_tubos_malos,
         concentracion_taladrina,
-        lote,
+        paquetes,
         observacion,
         creado
       )
       VALUES (
+        ${nuevoLote},
         ${operario_id},
         ${control_dimensional_id},
         ${turno_id},
@@ -280,7 +308,7 @@ export async function guardarProduccionTuboService(payload = {}) {
         ${cant_tubos_buenos},
         ${cant_tubos_malos},
         ${concentracion_taladrina},
-        '${lote}',
+        ${paquetes},
         '${observacion}',
         '${creado}'
       );
@@ -483,9 +511,11 @@ export async function listarProduccionAgrupadaPorTuboService(payload = {}) {
           (ISNULL(pt.cant_tubos_buenos, 0) + ISNULL(pt.cant_tubos_malos, 0))
             * ISNULL(t.peso_unitario, 0) / 1000.0 AS peso_total_tn,
           ISNULL(pt.concentracion_taladrina, 0) AS concentracion_taladrina,
-          pt.creado
+          pt.creado,
+          lt.lote AS lote
         FROM Prod_Tubos pt
         LEFT JOIN Tubos t ON t.id = pt.tubo_id
+        LEFT JOIN Lotes_Tubos lt ON lt.id = pt.lote_tubo_id
         WHERE CAST(pt.creado AS DATE) = '${dateOnly}'
       ),
       Paginado AS (
@@ -513,6 +543,7 @@ export async function listarProduccionAgrupadaPorTuboService(payload = {}) {
         num_producciones: 1,
         concentracion_taladrina: Number(row.concentracion_taladrina || 0),
         creado: row.creado,
+        lote: row.lote || '',
       })),
       total,
       page,

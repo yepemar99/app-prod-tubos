@@ -3,7 +3,6 @@ export const DB_CONFIG = {
   remote: {
     server: '.\\SQLEXPRESS',
     database: 'prod_tubos',
-    trusted: true,
     user: 'usuariodb',
     password: 'macero',
   },

@@ -49,6 +49,9 @@ const TableTubos = ({
                   <TableCell sx={{ bgcolor: '#eee', fontWeight: 'bold' }}>
                     Medida / Tubo
                   </TableCell>
+                  <TableCell sx={{ bgcolor: '#eee', fontWeight: 'bold' }}>
+                    Lote
+                  </TableCell>
                   <TableCell
                     align="center"
                     sx={{ bgcolor: '#eee', fontWeight: 'bold' }}
@@ -87,6 +90,7 @@ const TableTubos = ({
                 {rows.map((item) => (
                   <TableRow key={item.id} hover>
                     <TableCell>{item.medida}</TableCell>
+                    <TableCell>{item.lote}</TableCell>
 
                     <TableCell align="center">
                       {item.cant_tubos_buenos} / {item.cant_tubos_malos}
