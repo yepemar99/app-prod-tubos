@@ -11,7 +11,7 @@ const MainLayout = ({ children }) => {
 
   return (
     <Box minHeight="100vh">
-      <TopBar />
+      <TopBar title="Producción de Tubos" />
       <Box>
         <Outlet />
       </Box>

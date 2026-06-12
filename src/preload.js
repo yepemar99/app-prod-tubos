@@ -34,4 +34,7 @@ contextBridge.exposeInMainWorld('api', {
     getAll: (payload) => ipcRenderer.invoke('dimensiones:getAll', payload),
     crear: (payload) => ipcRenderer.invoke('dimensiones:crear', payload),
   },
+  actions: {
+    cerrarPrograma: () => ipcRenderer.invoke('cerrar-app'),
+  },
 });

@@ -1,12 +1,12 @@
-import odbc from "odbc";
-import { DB_CONFIG } from "../utils/constants";
+import odbc from 'odbc';
+import { DB_CONFIG, DB_LOCAL_CONFIG } from '../utils/constants';
 
 class Database {
   constructor() {
     if (Database.instance) return Database.instance;
     this.remote = null;
     this.active = null;
-    this.status = { target: "unknown", connected: false };
+    this.status = { target: 'unknown', connected: false };
 
     Database.instance = this;
   }
@@ -14,48 +14,77 @@ class Database {
   _setActive(connection, target) {
     this.active = connection;
     this.status = {
-      target, // "remote"
+      target,
       connected: true,
     };
-    console.log("⚡ DB ACTIVE =", this.status);
+    console.log('⚡ DB ACTIVE =', this.status);
+  }
+
+  async _connectWithConfig(config) {
+    return await odbc.connect(
+      `Driver={ODBC Driver 17 for SQL Server};
+       Server=${config.remote.server};
+       Database=${config.remote.database};
+       Uid=${config.remote.user};
+       Pwd=${config.remote.password};
+       TrustServerCertificate=Yes;
+       LoginTimeout=2;`,
+    );
   }
 
   // -------------------------------
   // CONECTAR A SQL SERVER REMOTO
   // -------------------------------
-  // Uid=${DB_CONFIG.remote.user};
-  //  Pwd=${DB_CONFIG.remote.password}; s
   async connectRemote() {
     try {
-      console.log("Intentando conectar a SQL Server remoto...");
+      console.log('Intentando conectar a SQL Server remoto...');
 
-      this.remote = await odbc.connect(
-        `Driver={ODBC Driver 17 for SQL Server};
-         Server=${DB_CONFIG.remote.server};
-         Database=${DB_CONFIG.remote.database};
-         Uid=${DB_CONFIG.remote.user};
-         Pwd=${DB_CONFIG.remote.password};
-         TrustServerCertificate=Yes;
-         LoginTimeout=2;`,
-      );
+      this.remote = await this._connectWithConfig(DB_CONFIG);
 
-      console.log("✔ Conectado a SQL Server remoto");
-      this._setActive(this.remote, "remote");
+      console.log('✔ Conectado a SQL Server remoto');
+      this._setActive(this.remote, 'remote');
       return this.remote;
     } catch (err) {
-      console.error("❌ No se pudo conectar al remoto:", err);
+      console.error('❌ No se pudo conectar al remoto:', err);
       this.remote = null;
-      throw new Error("No se pudo conectar al SQL Server remoto.");
+      throw err;
+    }
+  }
+
+  async connectLocal() {
+    try {
+      console.log('Intentando conectar a SQL Server local...');
+
+      this.active = await this._connectWithConfig(DB_LOCAL_CONFIG);
+
+      console.log('✔ Conectado a SQL Server local');
+      this._setActive(this.active, 'local');
+      return this.active;
+    } catch (err) {
+      console.error('❌ No se pudo conectar a la local:', err);
+      this.active = null;
+      throw new Error('No se pudo conectar al SQL Server local.');
     }
   }
 
   async connect() {
-    console.log("Inicializando conexión a BD remota...");
-    return await this.connectRemote();
+    console.log('Inicializando conexión a BD remota...');
+    try {
+      return await this.connectRemote();
+    } catch (remoteError) {
+      console.warn('⚠️ Reintentando con la base local...');
+      try {
+        return await this.connectLocal();
+      } catch (localError) {
+        throw new Error(
+          `No se pudo conectar ni a la base remota ni a la local. Remota: ${remoteError.message}; Local: ${localError.message}`,
+        );
+      }
+    }
   }
 
   getConnection() {
-    if (!this.active) throw new Error("Base de datos no conectada.");
+    if (!this.active) throw new Error('Base de datos no conectada.');
     return this.active;
   }
 }

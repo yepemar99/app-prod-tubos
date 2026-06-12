@@ -1,16 +1,10 @@
-import React from "react";
+import React from 'react';
 
 const ButtonBase = {
   defaultProps: {
     disableRipple: false,
   },
-  styleOverrides: {
-    root: {
-      "&:hover": {
-        backgroundColor: "transparent",
-      },
-    },
-  },
+  styleOverrides: {},
 };
 
 export default ButtonBase;

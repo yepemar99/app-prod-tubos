@@ -8,6 +8,15 @@ export const DB_CONFIG = {
   },
 };
 
+export const DB_LOCAL_CONFIG = {
+  remote: {
+    server: '.\\SQLEXPRESS',
+    database: 'prod_locals_tubos',
+    user: 'usuariodb',
+    password: 'macero',
+  },
+};
+
 // Puerto del servidor
 export const SERVER_PORT = 3000;
 

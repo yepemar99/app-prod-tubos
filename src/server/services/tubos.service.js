@@ -256,24 +256,32 @@ export async function guardarProduccionTuboService(payload = {}) {
 
     // Buscar lote y actualizar cantidad final
     const loteQuery = `
-      SELECT TOP 1 * FROM Lotes_Tubos 
+      SELECT TOP 1 * FROM Lotes_Flejes_Tubos 
       WHERE tubo_id = ${tubo_id} 
       AND CAST(creado AS DATE) = '${creado}'
       ORDER BY id DESC
     `;
 
     const loteResult = await database.getConnection().query(loteQuery);
-    const ultimoLote = loteResult?.[0] || '';
+    let ultimoLote = loteResult?.[0] || '';
 
-    if (!ultimoLote) {
-      throw new Error(
-        'No se encontro lote para la produccion el tubo y fecha indicados',
-      );
+    if (!ultimoLote?.lote_tubo_id) {
+      const newLote = '';
+      const insertLoteQuery = `
+        INSERT INTO Lotes_Tubos (lote)
+        OUTPUT INSERTED.id
+        VALUES ('${escapeSqlString(newLote)}')
+      `;
+      const result = await conn.query(insertLoteQuery);
+      ultimoLote = {
+        id: result?.[0]?.id ? Number(result[0].id) : null,
+        lote_tubo_id: result?.[0]?.id ? Number(result[0].id) : null,
+      };
     }
 
     if (ultimoLote?.num_paq_final == 0) {
       const updateLoteQuery = `
-        UPDATE Lotes_Tubos
+        UPDATE Lotes_Flejes_Tubos
         SET num_paq_final = ${Math.trunc(paquetes)}
         WHERE id = ${ultimoLote.id}
       `;
@@ -281,7 +289,9 @@ export async function guardarProduccionTuboService(payload = {}) {
       await conn.query(updateLoteQuery);
     }
 
-    const nuevoLote = ultimoLote?.id ? Number(ultimoLote.id) : null;
+    const nuevoLote = ultimoLote?.lote_tubo_id
+      ? Number(ultimoLote.lote_tubo_id)
+      : null;
 
     const query = `
       INSERT INTO Prod_Tubos (
