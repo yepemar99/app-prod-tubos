@@ -268,9 +268,9 @@ export async function guardarProduccionTuboService(payload = {}) {
     if (!ultimoLote?.lote_tubo_id) {
       const newLote = '';
       const insertLoteQuery = `
-        INSERT INTO Lotes_Tubos (lote)
+        INSERT INTO Lotes_Tubos (lote, maquina_id)
         OUTPUT INSERTED.id
-        VALUES ('${escapeSqlString(newLote)}')
+        VALUES ('${escapeSqlString(newLote)}', ${maquina_id})
       `;
       const result = await conn.query(insertLoteQuery);
       ultimoLote = {
